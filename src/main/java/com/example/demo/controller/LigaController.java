@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import java.util.List;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -25,6 +25,7 @@ public class LigaController {
     private ResultadoService resultadoService;
 
     // --- INICIO ---
+    // Muestra la página principal
     @GetMapping("/") public String index() { return "index"; }
 
     // --- EQUIPOS ---
@@ -35,10 +36,10 @@ public class LigaController {
         return "equipos/equipos_lista";
     }
 
-    // formulario para crear un nuevo equipo
+    // Muestra el formulario para crear un nuevo equipo
     @GetMapping("/equipos/nuevo") public String formEquipo() { return "equipos/equipos_alta"; }
     
-    // comprueba el nuevo equipo
+    // Guarda un equipo nuevo si no existe otro con el mismo nombre
     @PostMapping("/equipos/guardar")
     public String guardarEquipo(@RequestParam String nombre, @RequestParam String entrenador, RedirectAttributes redirectAttrs) {
         if(equipoService.buscarPorNombre(nombre) == null) {
@@ -50,27 +51,27 @@ public class LigaController {
         return "redirect:/equipos";
     }
 
-    // lista de jugadores
+    // --- JUGADORES ---
+    // Muestra la lista de jugadores
     @GetMapping("/jugadores")
     public String verJugadores(Model model) {
         model.addAttribute("listaJugadores", jugadorService.obtenerTodos());
         return "jugadores/jugadores_lista";
     }
 
-    // formulario para un nuevo jugador, añade la lista de equipos
+    // Muestra el formulario para crear un nuevo jugador y los equipos disponibles
     @GetMapping("/jugadores/nuevo")
     public String formJugador(Model model) {
         model.addAttribute("listaEquipos", equipoService.obtenerTodos());
         return "jugadores/jugadores_alta";
     }
 
-    // valida edad, asigna jugador al equipo y guarda
+    // Guarda un jugador si es mayor de 16 y el equipo existe
     @PostMapping("/jugadores/guardar")
     public String guardarJugador(JugadorDTO jugador, @RequestParam String nombreEquipo, RedirectAttributes redirectAttrs) {
         if(jugador.esMayorDe16()) {
             EquipoDTO e = equipoService.buscarPorNombre(nombreEquipo);
             if(e != null) {
-                // Asignamos el nombre del equipo al jugador para las estadísticas
                 jugador.setNombreEquipo(nombreEquipo);
                 jugadorService.guardarJugador(jugador);
                 e.agregarJugador(jugador);
@@ -86,8 +87,7 @@ public class LigaController {
         }
     }
     
-    // --- FICHA INDIVIDUAL JUGADOR ---
-    // Muestra la ficha individual de un jugador buscado por DNI
+    // Muestra el detalle de un jugador buscándolo por DNI
     @GetMapping("/jugadores/detalle/{dni}")
     public String detalleJugador(@PathVariable String dni, Model model) {
         JugadorDTO j = jugadorService.buscarPorDni(dni);
@@ -106,14 +106,14 @@ public class LigaController {
         return "partidos/partidos_lista";
     }
 
-    // formulario para programar un partido, añade la lista de equipos
+    // Muestra el formulario para programar un partido con los equipos disponibles
     @GetMapping("/partidos/nuevo")
     public String formPartido(Model model) {
         model.addAttribute("equipos", equipoService.obtenerTodos());
         return "partidos/partidos_alta";
     }
 
-    // comprueba que son equipos distintos y crea el partido
+    // Crea un partido si los equipos existen y no son el mismo
     @PostMapping("/partidos/guardar")
     public String guardarPartido(@RequestParam String local, @RequestParam String visitante, RedirectAttributes redirectAttrs) {
         if(local.equals(visitante)) {
@@ -131,7 +131,7 @@ public class LigaController {
     }
 
     // --- RESULTADOS ---
-    // formulario para registrar el resultado si el partido existe y no está jugado
+    // Muestra el formulario para introducir el resultado de un partido no jugado
     @GetMapping("/partidos/jugar/{id}")
     public String formResultado(@PathVariable int id, Model model, RedirectAttributes red) {
         PartidoDTO p = partidoService.buscarPorId(id);
@@ -143,38 +143,74 @@ public class LigaController {
         return "partidos/partidos_resultado";
     }
 
-    // guarda el resultado y calcula goles a partir de las listas de goleadores
+    // Procesa y registra el resultado del partido, incluyendo goles por jugador
     @PostMapping("/partidos/registrar-resultado")
     public String registrarResultado(@RequestParam int idPartido, 
-                                     // listas de IDs, checkbox de quienes marcaron
-                                     @RequestParam(required = false) List<String> goleadoresLocal, 
-                                     @RequestParam(required = false) List<String> goleadoresVisitante,
+                                     @RequestParam Map<String, String> allParams,
                                      RedirectAttributes redirectAttrs) {
+        
         PartidoDTO p = partidoService.buscarPorId(idPartido);
+        
         if(p != null && !p.isJugado()) {
-            // goles segun cuantos checkbox se han marcado
-            int golesL = (goleadoresLocal != null) ? goleadoresLocal.size() : 0;
-            int golesV = (goleadoresVisitante != null) ? goleadoresVisitante.size() : 0;
-
-            // Llamamos al servicio con las listas
-            resultadoService.registrarResultado(p, golesL, golesV, goleadoresLocal, goleadoresVisitante);
             
-            redirectAttrs.addFlashAttribute("mensaje", "Resultado y goleadores registrados.");
+            // Mapas limpios donde se guarda <DNI_REAL, GOLES>
+            Map<String, Integer> mapaLocalLimpio = new HashMap<>();
+            Map<String, Integer> mapaVisitanteLimpio = new HashMap<>();
+            
+            int totalGolesLocal = 0;
+            int totalGolesVisitante = 0;
+
+            // Recorremos TODOS los parámetros que llegaron del formulario
+            for (Map.Entry<String, String> entry : allParams.entrySet()) {
+                String key = entry.getKey();   // Ej: "golesLocal[12345678Z]"
+                String value = entry.getValue(); // Ej: "2"
+
+                try {
+                    int goles = Integer.parseInt(value);
+
+                    // Filtrar goles LOCALES
+                    if (key.startsWith("golesLocal[")) {
+                        // se saca el DNI que está entre los corchetes
+                        // "golesLocal[".length() es 11. 
+                        // Quitamos el último carácter "]"
+                        String dniReal = key.substring(11, key.length() - 1);
+                        
+                        mapaLocalLimpio.put(dniReal, goles);
+                        totalGolesLocal += goles;
+                    } 
+                    // Filtrar goles VISITANTES
+                    else if (key.startsWith("golesVisitante[")) {
+                        // "golesVisitante[".length() es 15
+                        String dniReal = key.substring(15, key.length() - 1);
+                        
+                        mapaVisitanteLimpio.put(dniReal, goles);
+                        totalGolesVisitante += goles;
+                    }
+                    
+                } catch (NumberFormatException e) {
+
+                } catch (StringIndexOutOfBoundsException e) {
+
+                }
+            }
+
+            // datos ya limpios y separados correctamente
+            resultadoService.registrarResultado(p, totalGolesLocal, totalGolesVisitante, mapaLocalLimpio, mapaVisitanteLimpio);
+            
+            redirectAttrs.addFlashAttribute("mensaje", "Resultado registrado: " + totalGolesLocal + " - " + totalGolesVisitante);
         }
         return "redirect:/clasificacion";
     }
 
-    // --- CLASIFICACIÓN ---
-    // Muestra la clasificación ordenada por puntos
+    // --- CLASIFICACIÓN Y ESTADÍSTICAS ---
+    // Muestra la clasificación ordenada de equipos
     @GetMapping("/clasificacion")
     public String verClasificacion(Model model) {
-        // Usamos el método que devuelve ordenado
         model.addAttribute("equipos", equipoService.obtenerClasificacionOrdenada());
         return "clasificacion";
     }
 
-    // --- ESTADÍSTICAS ---
-    // Muestra las estadísticas: goleadores y porteros menos goleados
+    // Muestra estadísticas de goleadores y porteros menos goleados
     @GetMapping("/estadisticas")
     public String verEstadisticas(Model model) {
         model.addAttribute("goleadores", jugadorService.obtenerGoleadoresOrdenados());

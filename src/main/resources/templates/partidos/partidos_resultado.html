@@ -16,35 +16,49 @@
         <input type="hidden" name="idPartido" th:value="${partido.id}">
         
         <div style="display:flex; justify-content: space-around;">
-            <div style="width: 45%;">
+            
+            <div style="width: 45%; background: #f9f9f9; padding: 15px; border-radius: 5px;">
                 <h3 th:text="${partido.equipoLocal.nombre} + ' (Local)'"></h3>
-                <p><strong>Marcar Goleadores:</strong></p>
-                <div th:each="j : ${partido.equipoLocal.jugadores}">
-                    <input type="checkbox" name="goleadoresLocal" th:value="${j.dni}">
-                    <label th:text="${j.nombre} + ' (' + ${j.posicion} + ')'"
-                           th:style="${j.posicion == 'Portero' ? 'color:gray; font-style:italic;' : ''}">
+                <p>Indica los goles de cada jugador:</p>
+                
+                <div th:each="j : ${partido.equipoLocal.jugadores}" style="margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+                    <label th:text="${j.nombre} + ' (' + ${j.posicion} + ')'" 
+                           th:style="${j.posicion == 'Portero' ? 'color:gray; font-style:italic;' : 'font-weight:bold;'}">
                     </label>
+                    <br>
+                    Goles: <input type="number" 
+                                  th:name="'golesLocal[' + ${j.dni} + ']'" 
+                                  min="0" value="0" 
+                                  style="width: 60px;">
                 </div>
             </div>
 
-            <div style="width: 45%;">
+            <div style="width: 45%; background: #f9f9f9; padding: 15px; border-radius: 5px;">
                 <h3 th:text="${partido.equipoVisitante.nombre} + ' (Visitante)'"></h3>
-                <p><strong>Marcar Goleadores:</strong></p>
-                <div th:each="j : ${partido.equipoVisitante.jugadores}">
-                    <input type="checkbox" name="goleadoresVisitante" th:value="${j.dni}">
+                <p>Indica los goles de cada jugador:</p>
+                
+                <div th:each="j : ${partido.equipoVisitante.jugadores}" style="margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
                     <label th:text="${j.nombre} + ' (' + ${j.posicion} + ')'"
-                           th:style="${j.posicion == 'Portero' ? 'color:gray; font-style:italic;' : ''}">
+                           th:style="${j.posicion == 'Portero' ? 'color:gray; font-style:italic;' : 'font-weight:bold;'}">
                     </label>
+                    <br>
+                    Goles: <input type="number" 
+                                  th:name="'golesVisitante[' + ${j.dni} + ']'" 
+                                  min="0" value="0" 
+                                  style="width: 60px;">
                 </div>
             </div>
         </div>
 
         <br><hr><br>
         <p style="text-align: center; color: #666;">
-            <em>* El sistema calculará automáticamente los goles totales.<br>
+            <em>* El resultado final se calculará sumando los goles introducidos.<br>
             * Los goles encajados se sumarán automáticamente a los Porteros.</em>
         </p>
-        <button type="submit" style="width: 100%; padding: 15px; font-size: 1.2em;">Finalizar Partido</button>
+        
+        <button type="submit" style="width: 100%; padding: 15px; font-size: 1.2em; cursor: pointer;">
+            Finalizar Partido y Calcular Puntos
+        </button>
     </form>
     
     <br>

@@ -1,10 +1,13 @@
 package com.example.demo.service;
 
 import com.example.demo.model.PartidoDTO;
-import java.util.List;
+import java.util.Map;
 
 public interface ResultadoService {
-    /* Ahora el método acepta las listas de DNI de los jugadores que marcaron */
+    
+    // Registra el resultado de un partido
+    
     void registrarResultado(PartidoDTO partido, int golesLocal, int golesVisitante, 
-                            List<String> dnisGoleadoresLocal, List<String> dnisGoleadoresVisitante);
+                            Map<String, Integer> mapaGolesLocal, 
+                            Map<String, Integer> mapaGolesVisitante);
 }

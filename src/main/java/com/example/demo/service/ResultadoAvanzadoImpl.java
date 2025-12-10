@@ -1,66 +1,94 @@
 package com.example.demo.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
 import com.example.demo.model.JugadorDTO;
 import com.example.demo.model.PartidoDTO;
-import java.util.List;
 
 @Service
 @Qualifier("avanzado") 
 public class ResultadoAvanzadoImpl extends ResultadoNormalImpl {
 
-    // servicio de jugadores para poder buscarlos por DNI y modificarlos
+    // servicio de jugadores para buscarlos y actualizarlos
     @Autowired
     private JugadorService jugadorService;
 
-    
-    // Procesa el resultado final de un partido.
+
+    //Procesa tanto los puntos del equipo como las estadísticas de los jugadores
+
     @Override
-    public void registrarResultado(PartidoDTO p, int gL, int gV, List<String> dnisLocal, List<String> dnisVisitante) {
+    public void registrarResultado(PartidoDTO p, int gL, int gV, 
+                                   Map<String, Integer> mapaGolesLocal, 
+                                   Map<String, Integer> mapaGolesVisitante) {
         
-        // asignar los puntos por victorias, empates y derrotas y goles totales al equipo
-        super.registrarResultado(p, gL, gV, dnisLocal, dnisVisitante);
+        // Llamada al padre (super), calcular puntos, victorias y goles generales del equipo
+        super.registrarResultado(p, gL, gV, mapaGolesLocal, mapaGolesVisitante);
         
-        // Procesar goleadores del Equipo Local
-        if (dnisLocal != null) {
+        // ASIGNA GOLES A JUGADORES (Delanteros, Medios, Defensas)
+        
+        // --- Procesar Equipo Local ---
+        if (mapaGolesLocal != null) {
+            List<String> dnisLocal = new ArrayList<>(mapaGolesLocal.keySet());
+            
             for (int i = 0; i < dnisLocal.size(); i++) {
                 String dni = dnisLocal.get(i);
-                JugadorDTO j = jugadorService.buscarPorDni(dni);
-                if (j != null) {
-                    // Sumamos +1 al contador personal del jugador
-                    j.setGoles(j.getGoles() + 1); 
+                // Recupera el número de goles asociados a ese DNI
+                Integer golesEnPartido = mapaGolesLocal.get(dni);
+
+                // Si el jugador marcó goles (> 0), actualizamos su ficha
+                if (golesEnPartido != null && golesEnPartido > 0) {
+                    JugadorDTO j = jugadorService.buscarPorDni(dni);
+                    if (j != null) {
+                        // Suma los goles de este partido al total histórico del jugador
+                        j.setGoles(j.getGoles() + golesEnPartido);
+                    }
                 }
             }
         }
 
-        // Procesar goleadores del Equipo Visitante
-        if (dnisVisitante != null) {
+        // --- Procesar Equipo Visitante ---
+        if (mapaGolesVisitante != null) {
+            List<String> dnisVisitante = new ArrayList<>(mapaGolesVisitante.keySet());
+            
             for (int i = 0; i < dnisVisitante.size(); i++) {
                 String dni = dnisVisitante.get(i);
-                JugadorDTO j = jugadorService.buscarPorDni(dni);
-                if (j != null) {
-                    j.setGoles(j.getGoles() + 1);
+                Integer golesEnPartido = mapaGolesVisitante.get(dni);
+
+                if (golesEnPartido != null && golesEnPartido > 0) {
+                    JugadorDTO j = jugadorService.buscarPorDni(dni);
+                    if (j != null) {
+                        j.setGoles(j.getGoles() + golesEnPartido);
+                    }
                 }
             }
         }
 
-        // Al portero local le sumamos los goles totales del visitante, y viceversa.
-        // Actualizar Portero Local
+        // ASIGNA GOLES EN CONTRA (Solo Porteros)
+        // el portero recibe todos los goles que encajó su equipo.
+        
+        // --- Portero Local ---
+        // Recibe todos los goles marcados por el equipo visitante (gV)
         List<JugadorDTO> plantillaLocal = p.getEquipoLocal().getJugadores();
         for(int i = 0; i < plantillaLocal.size(); i++) {
             JugadorDTO j = plantillaLocal.get(i);
-            if(j.getPosicion().equals("Portero")) {
+
+            if(j.getPosicion().equalsIgnoreCase("Portero")) {
                 j.setGolesEncajados(j.getGolesEncajados() + gV);
             }
         }
 
-        // Actualizar Portero Visitante
+        // --- Portero Visitante ---
+        // Recibe todos los goles marcados por el equipo local (gL)
         List<JugadorDTO> plantillaVisitante = p.getEquipoVisitante().getJugadores();
         for(int i = 0; i < plantillaVisitante.size(); i++) {
             JugadorDTO j = plantillaVisitante.get(i);
-            if(j.getPosicion().equals("Portero")) {
+            if(j.getPosicion().equalsIgnoreCase("Portero")) {
                 j.setGolesEncajados(j.getGolesEncajados() + gL);
             }
         }
