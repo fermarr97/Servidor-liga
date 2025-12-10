@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Calendario</title>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+    <h1>Calendario de Partidos</h1>
+    
+    <div th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold; margin-bottom: 15px;"></div>
+    <div th:if="${error}" th:text="${error}" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+
+    <p><a href="/partidos/nuevo" class="button">Programar Nuevo Partido</a></p>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Local</th>
+                <th>Visitante</th>
+                <th>Resultado</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${partidos}">
+                <td th:text="${p.equipoLocal.nombre}"></td>
+                <td th:text="${p.equipoVisitante.nombre}"></td>
+                <td>
+                    <span th:if="${p.jugado}" th:text="${p.golesLocal + ' - ' + p.golesVisitante}" style="font-weight:bold;"></span>
+                    <span th:unless="${p.jugado}" style="color:gray;">Pendiente</span>
+                </td>
+                <td>
+                    <a th:unless="${p.jugado}" th:href="@{/partidos/jugar/{id}(id=${p.id})}">Jugar Partido</a>
+                    <span th:if="${p.jugado}">Finalizado</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <br>
+    <a href="/">Volver</a>
+</body>
+</html>

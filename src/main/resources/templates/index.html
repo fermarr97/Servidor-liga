@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Liga Local - Inicio</title>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+    <h1>Panel de Control - Liga</h1>
+    
+    <div th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold; margin-bottom: 15px;"></div>
+    <div th:if="${error}" th:text="${error}" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+    
+    <ul>
+        <li><a href="/equipos">Gestión de Equipos</a> (Ver y Crear)</li>
+        <li><a href="/jugadores">Gestión de Jugadores</a> (Ver y Fichar)</li>
+        <li><a href="/partidos">Gestión de Partidos</a> (Calendario y Jugar)</li>
+        <li><a href="/clasificacion">Ver Clasificación General</a></li>
+        <li><a href="/estadisticas">Ver Estadísticas Individuales</a></li>
+    </ul>
+</body>
+</html>

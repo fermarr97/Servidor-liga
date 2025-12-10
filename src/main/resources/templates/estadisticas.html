@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Estadísticas</title>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+    <h1>Centro de Estadísticas</h1>
+    
+    <div th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold; margin-bottom: 15px;"></div>
+    <div th:if="${error}" th:text="${error}" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+    
+    <a href="/">Volver al Inicio</a>
+
+    <h2 style="color: darkblue;">Top Goleadores</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Jugador</th>
+                <th>Equipo</th>
+                <th>Goles</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="j : ${goleadores}" th:if="${j.goles > 0}">
+                <td>
+                    <a th:href="@{/jugadores/detalle/{dni}(dni=${j.dni})}" th:text="${j.nombre}"></a>
+                </td>
+                <td th:text="${j.nombreEquipo}"></td>
+                <td th:text="${j.goles}" style="font-weight: bold;"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2 style="color: darkred;">Porteros Menos Goleados</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Portero</th>
+                <th>Equipo</th>
+                <th>Goles Encajados</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${porteros}">
+                <td>
+                    <a th:href="@{/jugadores/detalle/{dni}(dni=${p.dni})}" th:text="${p.nombre}"></a>
+                </td>
+                <td th:text="${p.nombreEquipo}"></td>
+                <td th:text="${p.golesEncajados}" style="font-weight: bold;"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

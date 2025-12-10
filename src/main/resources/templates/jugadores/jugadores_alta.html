@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Fichar Jugador</title>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+    <h1>Ficha de Nuevo Jugador</h1>
+    
+    <div th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold; margin-bottom: 15px;"></div>
+    <div th:if="${error}" th:text="${error}" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+
+    <form action="/jugadores/guardar" method="post">
+        <label>Nombre Completo:</label><br>
+        <input type="text" name="nombre" required><br>
+        
+        <label>DNI:</label><br>
+        <input type="text" name="dni" required><br>
+        
+        <label>Edad (Min 16):</label><br>
+        <input type="number" name="edad" required><br>
+        
+        <label>Posición:</label><br>
+        <select name="posicion" required style="width: 300px; padding: 8px;">
+            <option value="Delantero">Delantero</option>
+            <option value="Centrocampista">Centrocampista</option>
+            <option value="Defensa">Defensa</option>
+            <option value="Portero">Portero</option>
+        </select>
+        <br>
+        
+        <label>Asignar a Equipo:</label><br>
+        <select name="nombreEquipo">
+            <option th:each="equipo : ${listaEquipos}" th:value="${equipo.nombre}" th:text="${equipo.nombre}"></option>
+        </select>
+        <br><br>
+        
+        <button type="submit">Registrar Jugador</button>
+    </form>
+    
+    <br>
+    <a href="/jugadores">Cancelar</a>
+</body>
+</html>

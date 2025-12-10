@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Clasificación</title>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+    <h1>Clasificación General</h1>
+    
+    <div th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold; margin-bottom: 15px;"></div>
+    <div th:if="${error}" th:text="${error}" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Equipo</th>
+                <th>Pts</th>
+                <th>V</th>
+                <th>E</th>
+                <th>D</th>
+                <th>GF</th>
+                <th>GC</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="e : ${equipos}">
+                <td th:text="${e.nombre}"></td>
+                <td th:text="${e.puntos}" style="font-weight:bold;"></td>
+                <td th:text="${e.victorias}"></td>
+                <td th:text="${e.empates}"></td>
+                <td th:text="${e.derrotas}"></td>
+                <td th:text="${e.golesFavor}"></td>
+                <td th:text="${e.golesContra}"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <br>
+    <a href="/">Volver al Inicio</a>
+</body>
+</html>

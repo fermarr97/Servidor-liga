@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de Jugadores</title>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+    <h1>Plantilla de Jugadores</h1>
+    
+    <div th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold; margin-bottom: 15px;"></div>
+    <div th:if="${error}" th:text="${error}" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+
+    <p><a href="/jugadores/nuevo" class="button">Fichar Nuevo Jugador</a></p>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Equipo</th>
+                <th>Posición</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="j : ${listaJugadores}">
+                <td th:text="${j.nombre}"></td>
+                <td th:text="${j.nombreEquipo}"></td> <td th:text="${j.posicion}"></td>
+                <td>
+                    <a th:href="@{/jugadores/detalle/{dni}(dni=${j.dni})}">Ver Ficha</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <br>
+    <a href="/">Volver al Inicio</a>
+</body>
+</html>

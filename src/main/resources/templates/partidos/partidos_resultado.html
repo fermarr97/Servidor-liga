@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Registrar Resultado</title>
+    <link rel="stylesheet" href="/styles.css"/>
+</head>
+<body>
+    <h1>Acta del Partido</h1>
+    
+    <div th:if="${mensaje}" th:text="${mensaje}" style="color: green; font-weight: bold; margin-bottom: 15px;"></div>
+    <div th:if="${error}" th:text="${error}" style="color: red; font-weight: bold; margin-bottom: 15px;"></div>
+
+    <h2 th:text="${partido.equipoLocal.nombre + ' vs ' + partido.equipoVisitante.nombre}"></h2>
+
+    <form action="/partidos/registrar-resultado" method="post">
+        <input type="hidden" name="idPartido" th:value="${partido.id}">
+        
+        <div style="display:flex; justify-content: space-around;">
+            <div style="width: 45%;">
+                <h3 th:text="${partido.equipoLocal.nombre} + ' (Local)'"></h3>
+                <p><strong>Marcar Goleadores:</strong></p>
+                <div th:each="j : ${partido.equipoLocal.jugadores}">
+                    <input type="checkbox" name="goleadoresLocal" th:value="${j.dni}">
+                    <label th:text="${j.nombre} + ' (' + ${j.posicion} + ')'"
+                           th:style="${j.posicion == 'Portero' ? 'color:gray; font-style:italic;' : ''}">
+                    </label>
+                </div>
+            </div>
+
+            <div style="width: 45%;">
+                <h3 th:text="${partido.equipoVisitante.nombre} + ' (Visitante)'"></h3>
+                <p><strong>Marcar Goleadores:</strong></p>
+                <div th:each="j : ${partido.equipoVisitante.jugadores}">
+                    <input type="checkbox" name="goleadoresVisitante" th:value="${j.dni}">
+                    <label th:text="${j.nombre} + ' (' + ${j.posicion} + ')'"
+                           th:style="${j.posicion == 'Portero' ? 'color:gray; font-style:italic;' : ''}">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <br><hr><br>
+        <p style="text-align: center; color: #666;">
+            <em>* El sistema calculará automáticamente los goles totales.<br>
+            * Los goles encajados se sumarán automáticamente a los Porteros.</em>
+        </p>
+        <button type="submit" style="width: 100%; padding: 15px; font-size: 1.2em;">Finalizar Partido</button>
+    </form>
+    
+    <br>
+    <a href="/partidos">Volver sin guardar</a>
+</body>
+</html>
